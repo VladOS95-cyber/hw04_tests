@@ -85,4 +85,7 @@ def post_edit(request, username, post_id):
             }))
     post.author = request.user
     form.save()
-    return redirect('index')
+    return redirect(reverse('post', kwargs={
+            'username': username, 
+            'post_id': post_id, 
+            }))
