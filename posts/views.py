@@ -45,7 +45,11 @@ def profile(request, username):
         'counter': counter,
         'post': post
     }
-    return render(request, 'profile.html', {'contex': contex, 'page': page, 'author': author})
+    return render(request, 'profile.html', {
+        'contex': contex, 
+        'page': page, 
+        'author': author, 
+        'paginator': paginator})
  
  
 def post_view(request, username, post_id):
