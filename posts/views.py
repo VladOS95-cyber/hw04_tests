@@ -34,11 +34,11 @@ def group_posts(request, slug):
 
 def profile(request, username):
     author = get_object_or_404(User, username=username)
-    post_list = author.posts.all()
+    post_list = Post.objects.filter(author=author)
     paginator = Paginator(post_list, 10)
     page_number = request.GET.get('page')
     page = paginator.get_page(page_number)
-    post = post_list[0]
+    post = post_list.first()
     counter = paginator.count
     contex = {
         'post_list': post_list,
