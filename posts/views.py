@@ -25,23 +25,26 @@ def group_posts(request, slug):
     и выводит до 12 записей на странице.
     """
     group = get_object_or_404(Group, slug=slug)
-    posts = group.posts.all()[:12]
-    return render(request, 'group.html', {'group': group, 'posts': posts})
+    posts = group.posts.all()
+    paginator = Paginator(posts, 12)
+    page_number = request.GET.get('page')
+    page = paginator.get_page(page_number)
+    return render(request, 'group.html', {'group': group, 'posts': posts, 'page': page})
 
 
 def profile(request, username):
     author = get_object_or_404(User, username=username)
     post_list = author.posts.all()
-    post = post_list[0]
     paginator = Paginator(post_list, 10)
     page_number = request.GET.get('page')
     page = paginator.get_page(page_number)
+    post = post_list[0]
     counter = paginator.count
     contex = {
         'author': author,
-        'post': post,
         'post_list': post_list,
-        'counter': counter
+        'counter': counter,
+        'post': post
     }
     return render(request, 'profile.html', {'contex': contex, 'page': page})
  
