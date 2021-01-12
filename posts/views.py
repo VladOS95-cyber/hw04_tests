@@ -17,7 +17,7 @@ def index(request):
     paginator = Paginator(post_list, 10)
     page_number = request.GET.get('page')
     page = paginator.get_page(page_number)
-    return render(request, 'index.html', {'page': page})
+    return render(request, 'index.html', {'page': page, 'paginator': paginator})
 
 
 def group_posts(request, slug):
@@ -29,7 +29,7 @@ def group_posts(request, slug):
     paginator = Paginator(posts, 12)
     page_number = request.GET.get('page')
     page = paginator.get_page(page_number)
-    return render(request, 'group.html', {'group': group, 'posts': posts, 'page': page})
+    return render(request, 'group.html', {'group': group, 'posts': posts, 'page': page, 'paginator': paginator})
 
 
 def profile(request, username):
@@ -65,6 +65,7 @@ def new_post(request):
     post.author = request.user
     form.save()
     return redirect('index')
+
 
 @login_required
 def post_edit(request, username, post_id):
