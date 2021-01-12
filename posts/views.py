@@ -41,12 +41,11 @@ def profile(request, username):
     post = post_list[0]
     counter = paginator.count
     contex = {
-        'author': author,
         'post_list': post_list,
         'counter': counter,
         'post': post
     }
-    return render(request, 'profile.html', {'contex': contex, 'page': page})
+    return render(request, 'profile.html', {'contex': contex, 'page': page, 'author': author})
  
  
 def post_view(request, username, post_id):
@@ -73,7 +72,7 @@ def post_edit(request, username, post_id):
     post = get_object_or_404(Post, id=post_id, author=user)
     form = PostForm(request.POST or None, instance=post)
     if request.method == 'GET' or not form.is_valid():
-        return render(request, 'new.html', {'form': form, 'is_edit': True})
+        return render(request, 'new.html', {'form': form, 'is_edit': True, 'post': post})
     post = form.save(commit=False)
     if request.user != post.author:
         return redirect(reverse('post', kwargs={
