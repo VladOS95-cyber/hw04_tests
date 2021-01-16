@@ -44,12 +44,7 @@ def profile(request, username):
     paginator = Paginator(post_list, POSTS_PER_PAGE)
     page_number = request.GET.get('page')
     page = paginator.get_page(page_number)
-    if paginator.count == 0:
-        return render(request, 'profile.html', {
-        'page': page, 
-        'author': author, 
-        'paginator': paginator})
-    post = page[0]
+    post = post_list.first()
     return render(request, 'profile.html', {
         'post': post, 
         'page': page, 
