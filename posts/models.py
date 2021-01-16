@@ -36,7 +36,8 @@ class Post(models.Model):
     текст к публикации, дату, имя автора и
     ссылку на модель Group.
     """
-    text = models.TextField(verbose_name='Текст')
+    text = models.TextField(verbose_name='Текст поста', 
+    help_text = 'Введите текст поста для публикации.')
     pub_date = models.DateTimeField(
         verbose_name='Дата публикации', 
         auto_now_add=True,
@@ -50,13 +51,16 @@ class Post(models.Model):
         help_text = 'Имя автора добавляется автоматически'
     )
     group = models.ForeignKey(
-        Group, on_delete=models.SET_NULL, blank=True, null=True,
+        Group, on_delete=models.SET_NULL, 
+        verbose_name='Группа',
+        help_text = 'Выберите группу',
+        blank=True, null=True,
         related_name='posts'
     )
-
-    def __str__(self):
-        return self.text[:15]
 
     class Meta:
         """Класс для сортировки по датам."""
         ordering = ('-pub_date',)
+    
+    def __str__(self):
+        return self.text[:15]

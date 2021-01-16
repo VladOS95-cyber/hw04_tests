@@ -9,10 +9,11 @@
     </p>
         {% for post in page %}
     <h3>
-        Автор: {{ post.author.get_full_name}}, дата публикации: {% now "d F Y" %}
+        Автор: {{ post.author.get_full_name}}, дата публикации: {{ post.pub_date|date:"d M Y" }}
     </h3>
     <p> {{ post.text|linebreaksbr }}</p>
     {% if not forloop.last %}<hr>{% endif %}
+    <hr>
     {% endfor %}
-    {% include "paginator.html" %}
+    {% include "includes/paginator.html" %}
 {% endblock %}

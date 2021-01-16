@@ -1,7 +1,7 @@
-from django.contrib.auth import get_user_model
-from django.test import TestCase, Client
-from django.urls import reverse
 from django import forms
+from django.contrib.auth import get_user_model
+from django.test import Client, TestCase
+from django.urls import reverse
 
 from posts.models import Post, Group
 
@@ -11,7 +11,7 @@ User = get_user_model()
 
 class ViewTest(TestCase):
     @classmethod
-    def setUpClass(cls) -> None:
+    def setUpClass(cls):
         super().setUpClass()
         cls.user_author = User.objects.create(username='VladOs')
         cls.group = Group.objects.create(            
@@ -29,19 +29,26 @@ class ViewTest(TestCase):
             author = cls.user_author,
             group = cls.group,
         )
+        cls.post_01 = Post.objects.create(
+            text = 'Текст теста01',
+            author = cls.user_author,
+            group = cls.group_01
+        )
     
     def setUp(self):
         self.guest_client = Client()
         self.user = User.objects.create(username='author')
         self.authorized_client = Client()
         self.authorized_client.force_login(self.user)
+        self.post_author = Client()
+        self.post_author.force_login(ViewTest.user_author)
     
     def test_pages_uses_correct_template(self):
         """URL-адреса использует соответствующие шаблоны."""
         templates_pages_name={
             'index.html': reverse('index'),
             'group.html': reverse('group', kwargs=
-            {'slug':'test-group'}),
+            {'slug': ViewTest.group.slug}),
             'new.html': reverse('new_post'),
             'about/author.html': reverse('about:author'),
             'about/tech.html': reverse('about:tech')
@@ -51,20 +58,20 @@ class ViewTest(TestCase):
                 response = self.authorized_client.get(reverse_name)
                 self.assertTemplateUsed(response, template)
 
-    def test__page_show_correct_context(self):
+    def test_main_page_show_correct_context(self):
         """Шаблон index сформирован с правильным контекстом."""
         response = self.guest_client.get(reverse('index'))
         expected = ViewTest.post
-        form_field = response.context.get('page')[0]
-        self.assertEqual(form_field, expected)
+        post_context = response.context.get('page')[0]
+        self.assertEqual(post_context, expected)
 
     def test_group_page_show_correct_context(self):
         """Шаблон group сформирован с правильным контекстом."""
         response = self.authorized_client.get(reverse('group', kwargs=
-            {'slug':'test-group'}))
-        expected = Group.objects.all()[0]
-        form_field = response.context.get('group')
-        self.assertEqual(form_field, expected)
+            {'slug': ViewTest.group.slug}))
+        expected = Group.objects.get(slug=ViewTest.group.slug)
+        group_context = response.context.get('group')
+        self.assertEqual(group_context, expected)
     
     def test_post_creation_page_show_correct_context(self):
         """Шаблон new_post сформирован с правильным контекстом."""
@@ -78,19 +85,29 @@ class ViewTest(TestCase):
                 form_field = response.context.get('form').fields.get(value)
                 self.assertIsInstance(form_field, expected)
     
-    def test_new_post_with_group_shown_as_expected(self):
+    def test_new_post_with_group_shown_in_expected_group(self):
         """Сформированный пост отображается корректно
         на странице выбранной группы."""
         response = self.authorized_client.get(reverse('group', kwargs=
-            {'slug':'test-group01'}))
-        self.assertIsNone(response.context.get('post'))
+            {'slug': ViewTest.group_01.slug}))
+        group_title = response.context.get('group')
+        expected = ViewTest.post_01.group
+        self.assertEqual(group_title, expected)
+
+    def test_new_post_with_group_shown_in_main_page(self):
+        """Сформированный пост с указанной группой
+        отображается корректно на главной странице."""
+        response = self.authorized_client.get(reverse('index'))
+        index = response.context.get('page')[1].text
+        expected = ViewTest.post_01.text
+        self.assertEqual(index, expected)
    
     def test_edit_posts_show_correct_context(self):
         """Содержимое словаря context для страницы 
         редактирования поста."""
         username = ViewTest.user_author.username
         post_id = ViewTest.post.id
-        response = self.authorized_client.get(
+        response = self.post_author.get(
             reverse('post_edit', kwargs={
             'username': username,
             'post_id': post_id})
@@ -99,10 +116,13 @@ class ViewTest(TestCase):
             'text': forms.fields.CharField,
             'group': forms.fields.ChoiceField
         }
+        expected_author = ViewTest.post.author
+        page_context_author = response.context.get('post').author
         for value, expected in models_fields.items():
             with self.subTest(value=value):
                 form_field = response.context.get('form').fields.get(value)
                 self.assertIsInstance(form_field, expected)
+        self.assertEqual(page_context_author, expected_author)
     
     def test_user_profile_show_correct_context(self):
         """Содержимое словаря context для страницы 
@@ -112,9 +132,12 @@ class ViewTest(TestCase):
             reverse('profile', kwargs={
             'username': username})
             )
-        expected = ViewTest.post
-        form_field = response.context.get('page')[0]
-        self.assertEqual(form_field, expected)
+        expected_post = ViewTest.post
+        expected_author = ViewTest.post.author
+        page_context = response.context.get('page')[0]
+        page_context_author = response.context.get('post').author
+        self.assertEqual(page_context, expected_post)
+        self.assertEqual(page_context_author, expected_author)
 
     def test_one_post_show_correct_context(self):
         """Содержимое словаря context для страницы 
@@ -127,5 +150,12 @@ class ViewTest(TestCase):
             'post_id': post_id})
             )
         expected = ViewTest.post
-        form_field = response.context.get('post')
-        self.assertEqual(form_field, expected)
+        post_context = response.context.get('post')
+        self.assertEqual(post_context, expected)
+    
+    def test_main_page_show_correct_context(self):
+        """Проверка паджинатора на гл. странице."""
+        response = self.guest_client.get(reverse('index'))
+        expected = len(response.context['page'].object_list)
+        index_context = response.context.get('paginator').count
+        self.assertEqual(index_context, expected)

@@ -1,6 +1,6 @@
 from django.contrib.auth import get_user_model
-
 from django.test import TestCase, Client
+from django.urls import reverse
 
 from posts.models import Post, Group
 
@@ -10,7 +10,7 @@ User = get_user_model()
 
 class URLTests(TestCase):
     @classmethod
-    def setUpClass(cls) -> None:
+    def setUpClass(cls):
         super().setUpClass()
         cls.user_author = User.objects.create(username='author')
         cls.group = Group.objects.create(            
@@ -29,15 +29,23 @@ class URLTests(TestCase):
         self.user = User.objects.create(username='VladOs')
         self.authorized_client = Client()
         self.authorized_client.force_login(self.user)
+        self.post_author = Client()
+        self.post_author.force_login(URLTests.user_author)
     
     def test_new_post_creation(self):
-        """Доступ к страницам авториз. пользователям."""
+        """Доступ к страницам автора поста."""
         urls_pages_names = {
+            '/': 200,
+            '/group/test-group/': 200,
             '/new/': 200,
-            f'/{self.user_author.username}/1/edit/': 200
+            '/about/author/': 200,
+            '/about/tech/': 200,
+            f'/{URLTests.user_author.username}/': 200,
+            f'/{URLTests.user_author.username}/1/': 200,
+            f'/{URLTests.user_author.username}/1/edit/': 200
         }
         for url, code in urls_pages_names.items():
-            response = self.authorized_client .get(url)
+            response = self.post_author.get(url)
             self.assertEqual(response.status_code, code)
     
     def test_urls_access_guest_client(self):
@@ -48,12 +56,29 @@ class URLTests(TestCase):
             '/new/': 302,
             '/about/author/': 200,
             '/about/tech/': 200,
-            f'/{self.user_author.username}/': 200,
-            f'/{self.user_author.username}/1/': 200,
-            f'/{self.user_author.username}/1/edit/': 302
+            f'/{URLTests.user_author.username}/': 200,
+            f'/{URLTests.user_author.username}/1/': 200,
+            f'/{URLTests.user_author.username}/1/edit/': 302
         }
         for url, code in urls_pages_names.items():
             response = self.guest_client.get(url)
+            self.assertEqual(response.status_code, code)
+    
+    def test_urls_access_authorized_client(self):
+        """Доступ к страницам авториз. пользователям
+        не автор поста."""
+        urls_pages_names = {
+            '/': 200,
+            '/group/test-group/': 200,
+            '/new/': 200,
+            '/about/author/': 200,
+            '/about/tech/': 200,
+            f'/{URLTests.user_author.username}/': 200,
+            f'/{URLTests.user_author.username}/1/': 200,
+            f'/{URLTests.user_author.username}/1/edit/': 302
+        }
+        for url, code in urls_pages_names.items():
+            response = self.authorized_client.get(url)
             self.assertEqual(response.status_code, code)
 
     def test_urls_uses_correct_template(self):
@@ -62,9 +87,24 @@ class URLTests(TestCase):
             'index.html': '/',
             'group.html': '/group/test-group/',
             'new.html': '/new/',
-            'new.html':f'/{self.user_author.username}/1/edit/'
+            'new.html': f'/{URLTests.user_author.username}/{URLTests.post.id}/edit/',
+            'post.html': f'/{URLTests.user_author.username}/{URLTests.post.id}/',
+            'profile.html': f'/{URLTests.user_author.username}/'
         }
         for template, reverse_name in templates_url_names.items():
             with self.subTest():
-                response = self.authorized_client.get(reverse_name)
+                response = self.post_author.get(reverse_name)
                 self.assertTemplateUsed(response, template)
+
+    def test_task_detail_url_redirect_anonymous(self):
+        """Страница по адресу /<username>/<post_id>/edit/ перенаправит анонимного
+        пользователя на страницу авторизации. А авториз. пользователя, не автора поста
+        на главную страницу."""
+        response_guest = self.guest_client.get(
+            f'/{URLTests.user_author.username}/{URLTests.post.id}/edit/', follow=True)
+        respone_authorized = self.authorized_client.get(
+        f'/{URLTests.user_author.username}/{URLTests.post.id}/edit/', follow=True)
+        self.assertRedirects(response_guest, 
+        f'/auth/login/?next=/{URLTests.user_author.username}/{URLTests.post.id}/edit/')
+        self.assertRedirects(respone_authorized, 
+        reverse('index'))
