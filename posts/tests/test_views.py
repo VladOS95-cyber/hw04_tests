@@ -153,7 +153,7 @@ class ViewTest(TestCase):
         post_context = response.context.get('post')
         self.assertEqual(post_context, expected)
     
-    def test_main_page_show_correct_context(self):
+    def test_paginator(self):
         """Проверка паджинатора на гл. странице."""
         response = self.guest_client.get(reverse('index'))
         expected = len(response.context['page'].object_list)

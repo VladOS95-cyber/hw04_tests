@@ -41,8 +41,8 @@ class URLTests(TestCase):
             '/about/author/': 200,
             '/about/tech/': 200,
             f'/{URLTests.user_author.username}/': 200,
-            f'/{URLTests.user_author.username}/1/': 200,
-            f'/{URLTests.user_author.username}/1/edit/': 200
+            f'/{URLTests.user_author.username}/{URLTests.post.id}/': 200,
+            f'/{URLTests.user_author.username}/{URLTests.post.id}/edit/': 200
         }
         for url, code in urls_pages_names.items():
             response = self.post_author.get(url)
@@ -57,8 +57,8 @@ class URLTests(TestCase):
             '/about/author/': 200,
             '/about/tech/': 200,
             f'/{URLTests.user_author.username}/': 200,
-            f'/{URLTests.user_author.username}/1/': 200,
-            f'/{URLTests.user_author.username}/1/edit/': 302
+            f'/{URLTests.user_author.username}/{URLTests.post.id}/': 200,
+            f'/{URLTests.user_author.username}/{URLTests.post.id}/edit/': 302
         }
         for url, code in urls_pages_names.items():
             response = self.guest_client.get(url)
@@ -74,8 +74,8 @@ class URLTests(TestCase):
             '/about/author/': 200,
             '/about/tech/': 200,
             f'/{URLTests.user_author.username}/': 200,
-            f'/{URLTests.user_author.username}/1/': 200,
-            f'/{URLTests.user_author.username}/1/edit/': 302
+            f'/{URLTests.user_author.username}/{URLTests.post.id}/': 200,
+            f'/{URLTests.user_author.username}/{URLTests.post.id}/edit/': 302
         }
         for url, code in urls_pages_names.items():
             response = self.authorized_client.get(url)

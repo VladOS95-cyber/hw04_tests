@@ -1,14 +1,14 @@
 {% extends "base.html" %}
-{% block title %}{{ author }}{% endblock %}
+{% block title %}{{ author.username }}{% endblock %}
 {% block content %}
 <h1>Выбранный пост</h1>
 <main role="main" class="container">
-<div class="row">
+    <div class="row">
         {% include "includes/author.html" %} 
-<div class="col-md-9">
+        <div class="col-md-9">
         <!-- Пост -->  
         {% include "includes/one_post.html" %}
-</div>
-</div>
+        </div>
+    </div>
 </main> 
 {% endblock %}

@@ -31,7 +31,9 @@ def group_posts(request, slug):
     paginator = Paginator(posts, POSTS_PER_PAGE)
     page_number = request.GET.get('page')
     page = paginator.get_page(page_number)
+    posts_quantity = paginator.count
     return render(request, 'group.html', {
+        'posts_quantity': posts_quantity,
         'group': group, 
         'posts': posts, 
         'page': page, 
@@ -45,7 +47,9 @@ def profile(request, username):
     page_number = request.GET.get('page')
     page = paginator.get_page(page_number)
     post = post_list.first()
+    posts_quantity = paginator.count
     return render(request, 'profile.html', {
+        'posts_quantity': posts_quantity,
         'post': post, 
         'page': page, 
         'author': author, 
@@ -53,14 +57,12 @@ def profile(request, username):
 
 
 def post_view(request, username, post_id):
-    posts = get_object_or_404(Post, id=post_id, author__username=username)
-    author = posts.author
-    post_list = author.posts
-    paginator = Paginator(post_list, POSTS_PER_PAGE)
+    post = get_object_or_404(Post, id=post_id, author__username=username)
+    posts_quantity = post.author.posts.all().count
     return render(request, 'post.html', {
-        'author': author, 
-        'post': posts,
-        'paginator': paginator})
+        'author': post.author, 
+        'post': post,
+        'posts_quantity': posts_quantity})
 
 
 @login_required
@@ -82,7 +84,6 @@ def post_edit(request, username, post_id):
     form = PostForm(request.POST or None, instance=post)
     if request.method == 'GET' or not form.is_valid():
         return render(request, 'new.html', {
-            'author': author,
             'form': form, 
             'is_edit': True, 
             'post': post})

@@ -11,21 +11,19 @@
 <!-- Конец блока с отдельным постом -->             
 <!-- Остальные посты --> 
 <div class="card mb-3 mt-1 shadow-sm">
-<div class="card-body"> 
-<p class="card-text">       
-{% for post in page %}
+     <div class="card-body"> 
+        <p class="card-text">       
+           {% for post in page %}
+           <h4>
+           Дата публикации: {{ post.pub_date|date:"d M Y" }}
+          </h4>
+          <p> {{ post.text|linebreaksbr }}</p>
 
-<h4>
-Дата публикации: {{ post.pub_date|date:"d M Y" }}
-</h4>
-<p> {{ post.text|linebreaksbr }}</p>
-
-{% if not forloop.last %}<hr>{% endif %}
-<hr>
-{% endfor %}
-</p>
+          {% if not forloop.last %}<hr>{% endif %}
+          {% endfor %}
+        </p>
 {% include "includes/paginator.html" %}
-</div>
-</div>
+     </div>
+   </div>
 </main> 
 {% endblock %}

@@ -37,11 +37,26 @@ class ModelsTest(TestCase):
     def test_verbose(self):
         """verbose_name поля совпадает с ожидаемым."""
         post = ModelsTest.post
-        verbose = post._meta.get_field('text').verbose_name
-        self.assertEquals(verbose, 'Текст поста')
+        verbose_names = {
+            'text': 'Текст поста',
+            'pub_date': 'Дата публикации',
+            'author': 'Имя автора',
+            'group': 'Группа'
+        }
+        for value, expected in verbose_names.items():
+            with self.subTest(value=value):
+                self.assertEqual(
+                    post._meta.get_field(value).verbose_name, expected)
     
     def test_help_text(self):
         """help_text поля совпадает с ожидаемым."""
         post = ModelsTest.post
-        help_texts = post._meta.get_field('text').help_text
-        self.assertEquals(help_texts, 'Введите текст поста для публикации.')
+        help_texts = {
+            'text': 'Введите текст поста для публикации.',
+            'pub_date': 'Дата добавляется автоматически',
+            'group': 'Выберите группу'
+        }
+        for value, expected in help_texts.items():
+            with self.subTest(value=value):
+                self.assertEqual(
+                    post._meta.get_field(value).help_text, expected)
