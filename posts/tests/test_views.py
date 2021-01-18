@@ -3,6 +3,8 @@ from django.contrib.auth import get_user_model
 from django.test import Client, TestCase
 from django.urls import reverse
 
+from itertools import islice
+
 from posts.models import Post, Group
 
 
@@ -155,7 +157,12 @@ class ViewTest(TestCase):
     
     def test_paginator(self):
         """Проверка паджинатора на гл. странице."""
+        batch_size = 20
+        objs = (Post(author=ViewTest.user_author, text='Test %s' % i) for i in range(20))
+        while True:
+            batch = list(islice(objs, batch_size))
+            if not batch:
+                break
+            Post.objects.bulk_create(batch, batch_size)
         response = self.guest_client.get(reverse('index'))
-        expected = len(response.context['page'].object_list)
-        index_context = response.context.get('paginator').count
-        self.assertEqual(index_context, expected)
+        self.assertEqual(len(response.context.get('page').object_list), 12)
