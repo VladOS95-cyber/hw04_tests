@@ -10,6 +10,7 @@ from posts.models import Post, Group
 
 User = get_user_model()
 
+POSTS_PER_PAGE = 12
 
 class ViewTest(TestCase):
     @classmethod
@@ -157,7 +158,6 @@ class ViewTest(TestCase):
     
     def test_paginator(self):
         """Проверка паджинатора на гл. странице."""
-        POSTS_PER_PAGE = 12
         objs = (Post(author=ViewTest.user_author, text='Test %s' % i) for i in range(20))
         Post.objects.bulk_create(objs)
         response = self.guest_client.get(reverse('index'))
