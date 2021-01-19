@@ -157,12 +157,11 @@ class ViewTest(TestCase):
     
     def test_paginator(self):
         """Проверка паджинатора на гл. странице."""
-        batch_size = 20
+        POSTS_PER_PAGE = 12
         objs = (Post(author=ViewTest.user_author, text='Test %s' % i) for i in range(20))
-        while True:
-            batch = list(islice(objs, batch_size))
-            if not batch:
-                break
-            Post.objects.bulk_create(batch, batch_size)
+        Post.objects.bulk_create(objs)
         response = self.guest_client.get(reverse('index'))
-        self.assertEqual(len(response.context.get('page').object_list), 12)
+        response_2_page = self.guest_client.get(reverse('index') + '?page=2')
+        all_posts_length = len(response.context.get('paginator').object_list)
+        self.assertEqual(len(response.context.get('page').object_list), POSTS_PER_PAGE)
+        self.assertEqual(len(response_2_page.context.get('page').object_list), all_posts_length - POSTS_PER_PAGE)
