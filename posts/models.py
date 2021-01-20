@@ -57,6 +57,11 @@ class Post(models.Model):
         blank=True, null=True,
         related_name='posts'
     )
+    image = models.ImageField(
+        upload_to='posts/', 
+        verbose_name='Картинка поста',
+        blank=True, 
+        null=True) 
 
     class Meta:
         """Класс для сортировки по датам."""
@@ -64,3 +69,30 @@ class Post(models.Model):
     
     def __str__(self):
         return self.text[:15]
+
+
+class Comment(models.Model):
+    """Модель для создания комментарий к постам."""
+    post =  models.ForeignKey(
+        Post, 
+        on_delete=models.SET_NULL, 
+        verbose_name='Пост',
+        help_text = 'Комментируемый пост',
+        blank=True, null=True,
+        related_name='comments')
+    author = models.ForeignKey(
+        User, 
+        on_delete=models.CASCADE,
+        verbose_name='Имя автора',
+        related_name='comments',
+        help_text = 'Имя автора добавляется автоматически'
+    )
+    text = models.TextField(
+        verbose_name='Текст коммента', 
+        help_text = 'Напишите комментарий')
+    created = models.DateTimeField(
+        verbose_name='Дата комментария', 
+        auto_now_add=True,
+        help_text = 'Дата добавляется автоматически'
+        )
+    

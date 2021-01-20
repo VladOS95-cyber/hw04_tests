@@ -42,7 +42,8 @@ class URLTests(TestCase):
             '/about/tech/': 200,
             f'/{URLTests.user_author.username}/': 200,
             f'/{URLTests.user_author.username}/{URLTests.post.id}/': 200,
-            f'/{URLTests.user_author.username}/{URLTests.post.id}/edit/': 200
+            f'/{URLTests.user_author.username}/{URLTests.post.id}/edit/': 200,
+            '/Несуществующее имя/': 404
         }
         for url, code in urls_pages_names.items():
             response = self.post_author.get(url)
@@ -58,7 +59,8 @@ class URLTests(TestCase):
             '/about/tech/': 200,
             f'/{URLTests.user_author.username}/': 200,
             f'/{URLTests.user_author.username}/{URLTests.post.id}/': 200,
-            f'/{URLTests.user_author.username}/{URLTests.post.id}/edit/': 302
+            f'/{URLTests.user_author.username}/{URLTests.post.id}/edit/': 302,
+            '/Несуществующее имя/': 404
         }
         for url, code in urls_pages_names.items():
             response = self.guest_client.get(url)
@@ -75,7 +77,8 @@ class URLTests(TestCase):
             '/about/tech/': 200,
             f'/{URLTests.user_author.username}/': 200,
             f'/{URLTests.user_author.username}/{URLTests.post.id}/': 200,
-            f'/{URLTests.user_author.username}/{URLTests.post.id}/edit/': 302
+            f'/{URLTests.user_author.username}/{URLTests.post.id}/edit/': 302,
+            '/Несуществующее имя/': 404
         }
         for url, code in urls_pages_names.items():
             response = self.authorized_client.get(url)
@@ -89,7 +92,8 @@ class URLTests(TestCase):
             'new.html': '/new/',
             'new.html': f'/{URLTests.user_author.username}/{URLTests.post.id}/edit/',
             'post.html': f'/{URLTests.user_author.username}/{URLTests.post.id}/',
-            'profile.html': f'/{URLTests.user_author.username}/'
+            'profile.html': f'/{URLTests.user_author.username}/',
+            'misc/404.html': 'Несуществующее имя/'
         }
         for template, reverse_name in templates_url_names.items():
             with self.subTest():

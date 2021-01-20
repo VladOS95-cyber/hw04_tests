@@ -67,7 +67,8 @@ def post_view(request, username, post_id):
 
 @login_required
 def new_post(request):
-    form = PostForm(request.POST or None)
+    form = PostForm(request.POST or None,
+    files=request.FILES or None)
     if request.method == 'GET' or not form.is_valid():
         return render(request, 'new.html', {'form': form, 'is_edit': False})
     post = form.save(commit=False)
@@ -75,13 +76,16 @@ def new_post(request):
     form.save()
     return redirect(reverse('index'))
 
+
 @login_required
 def post_edit(request, username, post_id):
     post = get_object_or_404(Post, id=post_id, author__username=username)
     author = post.author
     if request.user != author:
         return redirect(reverse('index'))
-    form = PostForm(request.POST or None, instance=post)
+    form = PostForm(request.POST or None, 
+    files=request.FILES or None, 
+    instance=post)
     if request.method == 'GET' or not form.is_valid():
         return render(request, 'new.html', {
             'form': form, 
@@ -93,3 +97,20 @@ def post_edit(request, username, post_id):
             'username': username, 
             'post_id': post_id, 
             }))
+
+
+def page_not_found(request, exception=None):
+    return render(
+        request, 
+        'misc/404.html', 
+        {'path': request.path}, 
+        status=404
+    )
+
+
+def server_error(request):
+    return render(request, 'misc/500.html', status=500)
+
+
+def add_comment(request):
+    
